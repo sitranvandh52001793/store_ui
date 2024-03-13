@@ -15,3 +15,6 @@ Color lightGrey = const Color(0xffF5F5F5);
 Color white = const Color(0xffFFFFFF);
 
 Color black = const Color(0xff06051B);
+
+Color success = const Color(0xff00C851);
+Color error = const Color(0xffFF4444);

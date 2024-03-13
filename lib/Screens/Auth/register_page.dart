@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:store_ui/Providers/AuthProviders/auth_provider.dart';
-
 import 'package:store_ui/Screens/Auth/login_page.dart';
 import 'package:store_ui/Styles/colors.dart';
 import 'package:store_ui/Utils/notify.dart';
@@ -9,7 +8,6 @@ import 'package:store_ui/Utils/routers.dart';
 import 'package:store_ui/Validators/auth_validator.dart';
 import 'package:store_ui/Widgets/button.dart';
 import 'package:store_ui/Widgets/text_field.dart';
-import 'package:toastification/toastification.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -108,12 +106,9 @@ class _RegisterPageState extends State<RegisterPage> {
         context: context,
       );
     } else {
-      showCustomToast(
-        context: context,
-        msg: 'Vui lòng kiểm tra lại thông tin',
-        type: ToastificationType.error,
-        iconData: Icons.error,
-      );
+      errorMessage(
+          context: context,
+          message: 'Vui lòng kiểm tra lại thông tin nhập vào');
     }
   }
 }

@@ -3,18 +3,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:store_ui/Constants/url.dart';
-import 'package:store_ui/Layouts/main_layout.dart';
-import 'package:store_ui/Models/user_model.dart';
 import 'package:store_ui/Models/user_test.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
-import 'package:store_ui/Providers/UserProviders/user_provider.dart';
 import 'package:store_ui/Screens/Auth/login_page.dart';
-import 'package:store_ui/Screens/Auth/verify_page.dart';
 import 'package:store_ui/Utils/notify.dart';
 import 'package:store_ui/Utils/routers.dart';
 
-class AuthProvider extends ChangeNotifier {
+class UserProvider extends ChangeNotifier {
   final requestUrl = ApiUrl.baseUrl;
   bool _isLoading = false;
   String _resMessageSuccess = '';
@@ -23,88 +20,69 @@ class AuthProvider extends ChangeNotifier {
   String get resMessageSuccess => _resMessageSuccess;
   String get resMessageError => _resMessageError;
 
-  void register({
-    required String name,
-    required String email,
-    required String password,
-    BuildContext? context,
-  }) async {
+  // Get me
+  Future<UserTest> getMe() async {
     _isLoading = true;
     notifyListeners();
-    String url = '$requestUrl/auth/register';
-    final body = {
-      'name': name,
-      'email': email,
-      'password': password,
-    };
+    String url = '$requestUrl/users/me';
+    final token = await UserDataProvider().getToken();
     try {
-      http.Response req = await http.post(
+      http.Response req = await http.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
         },
-        body: jsonEncode(body),
       );
 
       if (req.statusCode == 200 || req.statusCode == 201) {
         final res = jsonDecode(req.body);
         _isLoading = false;
-        _resMessageSuccess = res['data']['message'];
-        if (_resMessageSuccess.isNotEmpty) {
-          // ignore: use_build_context_synchronously
-          successMessage(context: context!, message: _resMessageSuccess);
-        }
         notifyListeners();
-        // ignore: use_build_context_synchronously
-        PageNavigator(ctx: context).nextPage(page: const VerifyPage());
+
+        return UserTest.fromJson(res['data']);
       } else {
         final res = jsonDecode(req.body);
         _isLoading = false;
-        if (req.statusCode == 400) {
-          _resMessageError = res['data']['email'];
-        } else {
-          _resMessageError = res['data']['message'];
-        }
-        if (_resMessageError.isNotEmpty) {
-          // ignore: use_build_context_synchronously
-          errorMessage(context: context!, message: _resMessageError);
-        }
+        _resMessageError = res['data']['message'];
         notifyListeners();
+        return UserTest();
       }
     } on SocketException {
       _isLoading = false;
       _resMessageError = 'Lỗi kết nối mạng';
       notifyListeners();
+      return UserTest();
     } catch (e) {
       _isLoading = false;
       _resMessageError = 'Lỗi không xác định';
       notifyListeners();
-    } finally {
-      clear();
+      return UserTest();
     }
   }
 
-  void login({
-    required String email,
-    required String password,
+  void changePassword({
+    required String oldPassword,
+    required String newPassword,
     BuildContext? context,
   }) async {
     _isLoading = true;
     notifyListeners();
-    UserDataProvider userDataProvider = UserDataProvider();
 
-    String url = '$requestUrl/auth/login';
+    String url = '$requestUrl/users/update-password';
+    final token = await UserDataProvider().getToken();
 
     final body = {
-      "email": email,
-      "password": password,
+      "oldPassword": oldPassword,
+      "newPassword": newPassword,
     };
 
     try {
-      http.Response req = await http.post(
+      http.Response req = await http.patch(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
         },
         body: jsonEncode(body),
       );
@@ -119,118 +97,93 @@ class AuthProvider extends ChangeNotifier {
           successMessage(context: context!, message: _resMessageSuccess);
         }
         notifyListeners();
-
-        // save and navigate to the home page
-        final token = res['data']['token'];
-        // UserTest user = res['data']['user'];
-
-        userDataProvider.saveToken(token);
-        final getMe = await UserProvider().getMe();
-        await userDataProvider.saveProfile(getMe);
-
-        // ignore: use_build_context_synchronously
-        PageNavigator(ctx: context).nextPageOnly(page: const MainLayout());
-      } else {
-        final res = jsonDecode(req.body);
-        _isLoading = false;
-        if (req.statusCode == 401) {
-          userDataProvider.saveEmail(email);
-          // ignore: use_build_context_synchronously
-          PageNavigator(ctx: context).nextPage(page: const VerifyPage());
-        }
-        if (req.statusCode == 400 || req.statusCode == 401) {
-          // Kiểm tra có tồn tại key 'email' trong res['data'] không
-          if (res['data'].containsKey('email')) {
-            _resMessageError = res['data']['email'];
-          } else if (res['data'].containsKey('password')) {
-            _resMessageError = res['data']['password'];
-          }
-        } else {
-          _resMessageError = res['data']['message'];
-        }
-        if (_resMessageError.isNotEmpty) {
-          // ignore: use_build_context_synchronously
-          errorMessage(context: context!, message: _resMessageError);
-        }
-        notifyListeners();
-      }
-    } on SocketException {
-      _isLoading = false;
-      _resMessageError = 'Lỗi kết nối mạng';
-      if (_resMessageError.isNotEmpty) {
-        // ignore: use_build_context_synchronously
-        errorMessage(context: context!, message: _resMessageError);
-      }
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _resMessageError = 'Lỗi không xác định';
-      if (_resMessageError.isNotEmpty) {
-        // ignore: use_build_context_synchronously
-        errorMessage(context: context!, message: _resMessageError);
-      }
-      notifyListeners();
-    } finally {
-      clear();
-    }
-  }
-
-  void verify({
-    required String email,
-    required String otp,
-    BuildContext? context,
-  }) async {
-    _isLoading = true;
-    notifyListeners();
-
-    String url = '$requestUrl/auth/verify';
-
-    final body = {
-      "email": email,
-      "otp": otp,
-    };
-
-    try {
-      http.Response req = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(body),
-      );
-
-      if (req.statusCode == 200 || req.statusCode == 201) {
-        final res = jsonDecode(req.body);
-        _isLoading = false;
-        _resMessageSuccess = res['data']['message'];
-
-        if (_resMessageSuccess.isNotEmpty) {
-          // ignore: use_build_context_synchronously
-          successMessage(context: context!, message: _resMessageSuccess);
-        }
-        notifyListeners();
-
         // ignore: use_build_context_synchronously
         PageNavigator(ctx: context).nextPageOnly(page: const LoginPage());
       } else {
         final res = jsonDecode(req.body);
         _isLoading = false;
+        _resMessageError = res['data']['message'];
 
-        if (req.statusCode == 404 || req.statusCode == 401) {
-          // Kiểm tra có tồn tại key 'email' trong res['data'] không
-          if (res['data'].containsKey('email')) {
-            _resMessageError = res['data']['email'];
-          } else if (res['data'].containsKey('password')) {
-            _resMessageError = res['data']['password'];
-          }
-        } else {
-          _resMessageError = res['data']['message'];
-        }
         if (_resMessageError.isNotEmpty) {
           // ignore: use_build_context_synchronously
-          errorMessage(context: context!, message: _resMessageError);
+          successMessage(context: context!, message: _resMessageError);
+          notifyListeners();
         }
+      }
+    } on SocketException {
+      _isLoading = false;
+      _resMessageError = 'Lỗi kết nối mạng';
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _resMessageError = 'Lỗi không xác định';
+      notifyListeners();
+    } finally {
+      clear();
+    }
+  }
+
+  void updateMe({
+    String? name,
+    String? phone,
+    String? province,
+    String? district,
+    String? village,
+    String? shortDescription,
+    BuildContext? context,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    String url = '$requestUrl/users/update';
+    final token = await UserDataProvider().getToken();
+    final body = {
+      "name": name,
+      "phone": phone,
+      "province": province,
+      "district": district,
+      "village": village,
+      "shortDescription": shortDescription,
+    };
+
+    try {
+      http.Response req = await http.patch(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: jsonEncode(body),
+      );
+
+      if (req.statusCode == 200 || req.statusCode == 201) {
+        final res = jsonDecode(req.body);
+        _isLoading = false;
+        _resMessageSuccess = res['data']['message'];
+
+        if (_resMessageSuccess.isNotEmpty) {
+          // ignore: use_build_context_synchronously
+          successMessage(context: context!, message: _resMessageSuccess);
+        }
+        // Set lại profile
+        final me = await getMe();
+        UserDataProvider userDataProvider = UserDataProvider();
+        userDataProvider.saveProfile(me);
+
         notifyListeners();
+
+        // ignore: use_build_context_synchronously
+        Navigator.of(context!).pop();
+      } else {
+        final res = jsonDecode(req.body);
+        _isLoading = false;
+        _resMessageError = res['data']['message'];
+
+        if (_resMessageError.isNotEmpty) {
+          // ignore: use_build_context_synchronously
+          successMessage(context: context!, message: _resMessageError);
+          notifyListeners();
+        }
       }
     } on SocketException {
       _isLoading = false;
@@ -253,64 +206,57 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  void resendOtp({
-    required String email,
-    BuildContext? context,
+  void logout({
+    required BuildContext context,
   }) async {
     _isLoading = true;
     notifyListeners();
 
-    String url = '$requestUrl/auth/resend-otp';
-
-    final body = {
-      "email": email,
-    };
+    String url = '$requestUrl/users/logout';
+    final token = await UserDataProvider().getToken();
 
     try {
       http.Response req = await http.post(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(body),
+        headers: {'Authorization': 'Bearer $token'},
       );
 
       if (req.statusCode == 200 || req.statusCode == 201) {
+        final SharedPreferences pref = await SharedPreferences.getInstance();
         final res = jsonDecode(req.body);
         _isLoading = false;
         _resMessageSuccess = res['data']['message'];
 
         if (_resMessageSuccess.isNotEmpty) {
           // ignore: use_build_context_synchronously
-          successMessage(context: context!, message: _resMessageSuccess);
+          successMessage(context: context, message: _resMessageSuccess);
         }
         notifyListeners();
+
+        pref.remove('token');
+        pref.remove('profile');
+        // ignore: use_build_context_synchronously
+        PageNavigator(ctx: context).nextPageOnly(page: const LoginPage());
+        // ignore: use_build_context_synchronously
+        PageNavigator(ctx: context).nextPageOnly(page: const LoginPage());
       } else {
         final res = jsonDecode(req.body);
         _isLoading = false;
-
         _resMessageError = res['data']['message'];
+
         if (_resMessageError.isNotEmpty) {
           // ignore: use_build_context_synchronously
-          errorMessage(context: context!, message: _resMessageError);
+          successMessage(context: context, message: _resMessageError);
+          notifyListeners();
         }
-        notifyListeners();
       }
     } on SocketException {
       _isLoading = false;
       _resMessageError = 'Lỗi kết nối mạng';
-      if (_resMessageError.isNotEmpty) {
-        // ignore: use_build_context_synchronously
-        errorMessage(context: context!, message: _resMessageError);
-      }
       notifyListeners();
     } catch (e) {
       _isLoading = false;
       _resMessageError = 'Lỗi không xác định';
-      if (_resMessageError.isNotEmpty) {
-        // ignore: use_build_context_synchronously
-        errorMessage(context: context!, message: _resMessageError);
-      }
       notifyListeners();
     } finally {
       clear();
