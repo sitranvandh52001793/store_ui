@@ -1,12 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:store_ui/Constants/url.dart';
 import 'package:store_ui/Layouts/main_layout.dart';
-import 'package:store_ui/Models/user_model.dart';
-import 'package:store_ui/Models/user_test.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
 import 'package:store_ui/Providers/UserProviders/user_provider.dart';
 import 'package:store_ui/Screens/Auth/login_page.dart';
@@ -122,7 +119,7 @@ class AuthProvider extends ChangeNotifier {
 
         // save and navigate to the home page
         final token = res['data']['token'];
-        // UserTest user = res['data']['user'];
+        // UserModel user = res['data']['user'];
 
         userDataProvider.saveToken(token);
         final getMe = await UserProvider().getMe();

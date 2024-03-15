@@ -3,9 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:store_ui/Models/user_model.dart';
-import 'package:store_ui/Models/user_test.dart';
-import 'package:store_ui/Screens/Auth/login_page.dart';
-import 'package:store_ui/Utils/routers.dart';
 
 class UserDataProvider extends ChangeNotifier {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
@@ -56,7 +53,7 @@ class UserDataProvider extends ChangeNotifier {
 
   Future<void> saveEmail(String data) async {
     final SharedPreferences pref = await _pref;
-    pref.setString('email', data); // Sử dụng toJson của UserTest
+    pref.setString('email', data); // Sử dụng toJson của UserModel
     notifyListeners();
   }
 
@@ -73,23 +70,23 @@ class UserDataProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> saveProfile(UserTest data) async {
+  Future<void> saveProfile(UserModel data) async {
     final SharedPreferences pref = await _pref;
     pref.setString(
-        'profile', jsonEncode(data.toJson())); // Sử dụng toJson của UserTest
+        'profile', jsonEncode(data.toJson())); // Sử dụng toJson của UserModel
     notifyListeners();
   }
 
-  Future<UserTest> getProfile() async {
+  Future<UserModel> getProfile() async {
     final SharedPreferences pref = await _pref;
     String? userDataString = pref.getString('profile');
 
     if (userDataString != null && userDataString.isNotEmpty) {
       Map<String, dynamic> userDataJson = jsonDecode(userDataString);
-      return UserTest.fromJson(
-          userDataJson); // Chuyển đổi dữ liệu từ JSON thành UserTest
+      return UserModel.fromJson(
+          userDataJson); // Chuyển đổi dữ liệu từ JSON thành UserModel
     } else {
-      return UserTest(); // Trả về một UserTest mặc định nếu không có dữ liệu được lưu trữ
+      return UserModel(); // Trả về một UserModel mặc định nếu không có dữ liệu được lưu trữ
     }
   }
 }

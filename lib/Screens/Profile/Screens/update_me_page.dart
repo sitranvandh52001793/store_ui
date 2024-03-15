@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:store_ui/Models/user_test.dart';
+import 'package:store_ui/Models/user_model.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
 import 'package:store_ui/Screens/Profile/Screens/update_address_page.dart';
 import 'package:store_ui/Screens/Profile/Screens/update_name_page.dart';
@@ -17,7 +17,7 @@ class UpdateMePage extends StatefulWidget {
 }
 
 class _UpdateMePageState extends State<UpdateMePage> {
-  UserTest user = UserTest();
+  UserModel user = UserModel();
   @override
   void initState() {
     UserDataProvider().getProfile().then((value) {

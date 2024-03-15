@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:store_ui/Models/user_test.dart';
+import 'package:store_ui/Models/user_model.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
 import 'package:store_ui/Screens/Auth/login_page.dart';
 import 'package:store_ui/Screens/Auth/register_page.dart';
@@ -47,7 +47,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(width: 10),
                 (context.watch<UserDataProvider>().name == '')
-                    ? FutureBuilder<UserTest>(
+                    ? FutureBuilder<UserModel>(
                         future: UserDataProvider().getProfile(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==

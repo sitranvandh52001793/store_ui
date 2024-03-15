@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:store_ui/Constants/url.dart';
-import 'package:store_ui/Models/user_test.dart';
+import 'package:store_ui/Models/user_model.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
 import 'package:store_ui/Screens/Auth/login_page.dart';
 import 'package:store_ui/Utils/notify.dart';
@@ -21,7 +21,7 @@ class UserProvider extends ChangeNotifier {
   String get resMessageError => _resMessageError;
 
   // Get me
-  Future<UserTest> getMe() async {
+  Future<UserModel> getMe() async {
     _isLoading = true;
     notifyListeners();
     String url = '$requestUrl/users/me';
@@ -40,24 +40,24 @@ class UserProvider extends ChangeNotifier {
         _isLoading = false;
         notifyListeners();
 
-        return UserTest.fromJson(res['data']);
+        return UserModel.fromJson(res['data']);
       } else {
         final res = jsonDecode(req.body);
         _isLoading = false;
         _resMessageError = res['data']['message'];
         notifyListeners();
-        return UserTest();
+        return UserModel();
       }
     } on SocketException {
       _isLoading = false;
       _resMessageError = 'Lỗi kết nối mạng';
       notifyListeners();
-      return UserTest();
+      return UserModel();
     } catch (e) {
       _isLoading = false;
       _resMessageError = 'Lỗi không xác định';
       notifyListeners();
-      return UserTest();
+      return UserModel();
     }
   }
 

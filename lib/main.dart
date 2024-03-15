@@ -1,12 +1,26 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:store_ui/Providers/AuthProviders/auth_provider.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
+import 'package:store_ui/Providers/PostProviders/post_provider.dart';
+import 'package:store_ui/Providers/ProductProviders/product_provider.dart';
 import 'package:store_ui/Providers/UserProviders/user_provider.dart';
 import 'package:store_ui/Styles/colors.dart';
 import 'package:store_ui/splash.dart';
 
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 void main() {
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
 
@@ -20,6 +34,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => UserDataProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => PostProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

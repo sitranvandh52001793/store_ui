@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:store_ui/Models/user_test.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
 import 'package:store_ui/Providers/UserProviders/user_provider.dart';
 import 'package:store_ui/Utils/notify.dart';
