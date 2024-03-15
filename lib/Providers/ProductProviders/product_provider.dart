@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:store_ui/Constants/url.dart';
+import 'package:store_ui/Models/product_model.dart';
 
 class ProductProvider extends ChangeNotifier {
   final requestUrl = ApiUrl.baseUrl;
@@ -55,5 +56,41 @@ class ProductProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<Product> getProductById({required String id}) async {
+    _isLoading = true;
+    notifyListeners();
+    String url = '$requestUrl/products/$id';
+
+    try {
+      http.Response req = await http.get(
+        Uri.parse(url),
+      );
+
+      if (req.statusCode == 200 || req.statusCode == 201) {
+        final res = jsonDecode(req.body);
+
+        _isLoading = false;
+
+        notifyListeners();
+
+        return Product.fromJson(res['data']['product']);
+      } else {
+        final res = jsonDecode(req.body);
+        _isLoading = false;
+        _resMessageError = res['data']['message'];
+        notifyListeners();
+      }
+    } on SocketException {
+      _isLoading = false;
+      _resMessageError = 'Lỗi kết nối mạng';
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _resMessageError = 'Lỗi không xác định';
+      notifyListeners();
+    }
+    return Product();
   }
 }

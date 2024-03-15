@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:store_ui/Styles/colors.dart';
 
 class ProductDetailAppbarBottom extends StatelessWidget {
   const ProductDetailAppbarBottom({super.key});
@@ -18,9 +19,9 @@ class ProductDetailAppbarBottom extends StatelessWidget {
               width: double.infinity,
               height: double.infinity,
               alignment: Alignment.center,
-              child: const Icon(
+              child: Icon(
                 Icons.chat_bubble_outline,
-                color: Color.fromRGBO(208, 1, 27, 1),
+                color: primaryColor,
               ),
             ),
           ),
@@ -30,10 +31,10 @@ class ProductDetailAppbarBottom extends StatelessWidget {
               width: double.infinity,
               height: double.infinity,
               alignment: Alignment.center,
-              child: const Icon(
+              child: Icon(
                 // Icon cart
                 Icons.shopping_cart_outlined,
-                color: Color.fromRGBO(208, 1, 27, 1),
+                color: primaryColor,
               ),
             ),
           ),
@@ -44,7 +45,7 @@ class ProductDetailAppbarBottom extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromRGBO(208, 1, 27, 1),
+                  backgroundColor: primaryColor,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   shape: RoundedRectangleBorder(
