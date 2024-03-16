@@ -246,7 +246,7 @@ class UserProvider extends ChangeNotifier {
 
         if (_resMessageError.isNotEmpty) {
           // ignore: use_build_context_synchronously
-          successMessage(context: context, message: _resMessageError);
+          errorMessage(context: context, message: _resMessageError);
           notifyListeners();
         }
       }

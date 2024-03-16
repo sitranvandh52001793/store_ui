@@ -20,6 +20,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() {
@@ -41,9 +45,6 @@ class _HomePageState extends State<HomePage> {
   void _scrollListener() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      if (Provider.of<ProductProvider>(context, listen: false).endPage) {
-        return;
-      }
       Provider.of<ProductProvider>(context, listen: false).getAllProduct();
     }
   }
@@ -55,7 +56,12 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: white,
         toolbarHeight: 130,
-        flexibleSpace: const HomeNavbar(),
+        flexibleSpace: HomeNavbar(
+          onSubmitted: (value) {
+            Provider.of<ProductProvider>(context, listen: false)
+                .getAllProduct(keyword: value);
+          },
+        ),
       ),
       body: CustomScrollView(
         controller: _scrollController,
@@ -65,11 +71,23 @@ class _HomePageState extends State<HomePage> {
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 // Trả về widget mà bạn muốn bổ sung trước GridView
-                return const Column(
+                return Column(
                   children: [
-                    SizedBox(height: 5),
-                    HomeSlider(),
-                    HomeCategory(),
+                    const SizedBox(height: 5),
+                    const HomeSlider(),
+                    HomeCategory(
+                      onTap: (value) {
+                        if (value == 'sold') {
+                          Provider.of<ProductProvider>(context, listen: false)
+                              .getAllProduct(sortBy: value);
+                        } else if (value == 'desc') {
+                          Provider.of<ProductProvider>(context, listen: false)
+                              .getAllProduct(order: value);
+                        }
+                        Provider.of<ProductProvider>(context, listen: false)
+                            .getAllProduct(sortBy: value);
+                      },
+                    ),
                   ],
                 );
               },

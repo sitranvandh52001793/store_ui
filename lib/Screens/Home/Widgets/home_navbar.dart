@@ -1,11 +1,21 @@
 // import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:store_ui/Providers/CartProviders/cart_provider.dart';
+import 'package:store_ui/Providers/ProductProviders/product_provider.dart';
 import 'package:store_ui/Styles/colors.dart';
-// import 'package:badges/badges.dart' as badges;
+import 'package:badges/badges.dart' as badges;
 
-class HomeNavbar extends StatelessWidget {
-  const HomeNavbar({super.key});
+class HomeNavbar extends StatefulWidget {
+  final void Function(String)?
+      onSubmitted; // Định nghĩa thuộc tính hàm onSubmitted
+  const HomeNavbar({super.key, this.onSubmitted});
 
+  @override
+  State<HomeNavbar> createState() => _HomeNavbarState();
+}
+
+class _HomeNavbarState extends State<HomeNavbar> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -24,7 +34,7 @@ class HomeNavbar extends StatelessWidget {
                 )),
           ),
           Container(
-            margin: EdgeInsets.only(top: 10),
+            margin: const EdgeInsets.only(top: 10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -39,16 +49,19 @@ class HomeNavbar extends StatelessWidget {
                           border: Border.all(
                               color: Colors.grey.shade300, width: 0.5),
                         ),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            // Height
-
-                            border: InputBorder.none,
-                            hintText: 'Tìm kiếm',
-                            hintStyle: TextStyle(
-                                color: Colors.grey.shade500, fontSize: 14),
-                          ),
-                        ),
+                        child: Consumer<ProductProvider>(
+                            builder: (context, productProvider, child) {
+                          return TextField(
+                            onSubmitted: widget.onSubmitted,
+                            decoration: InputDecoration(
+                              // Height
+                              border: InputBorder.none,
+                              hintText: 'Tìm kiếm',
+                              hintStyle: TextStyle(
+                                  color: Colors.grey.shade500, fontSize: 14),
+                            ),
+                          );
+                        }),
                       ),
                       const Positioned(
                         left: 10,
@@ -62,9 +75,29 @@ class HomeNavbar extends StatelessWidget {
                 const SizedBox(width: 20),
                 Expanded(
                   flex: 1,
-                  child: IconButton(
-                    icon: const Icon(Icons.shopping_cart),
-                    onPressed: () {},
+                  child: badges.Badge(
+                    position: badges.BadgePosition.topEnd(top: -10, end: -3),
+                    showBadge: true,
+                    ignorePointer: false,
+                    badgeContent: Consumer<CartProvider>(
+                        builder: (context, cartProvider, child) {
+                      return Text(
+                        cartProvider.totalCart.toString(),
+                        style: TextStyle(color: white, fontSize: 12),
+                      );
+                    }),
+                    badgeAnimation: const badges.BadgeAnimation.rotation(
+                      animationDuration: Duration(seconds: 1),
+                      colorChangeAnimationDuration: Duration(seconds: 1),
+                      loopAnimation: false,
+                      curve: Curves.fastOutSlowIn,
+                      colorChangeAnimationCurve: Curves.easeInCubic,
+                    ),
+                    child: Icon(
+                      Icons.shopping_cart_outlined,
+                      size: 30,
+                      color: primaryColor,
+                    ),
                   ),
                 ),
               ],

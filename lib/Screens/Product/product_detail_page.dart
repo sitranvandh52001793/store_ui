@@ -1,9 +1,13 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:provider/provider.dart';
 import 'package:store_ui/Models/product_model.dart';
+import 'package:store_ui/Providers/CartProviders/cart_provider.dart';
 import 'package:store_ui/Providers/ProductProviders/product_provider.dart';
 import 'package:store_ui/Screens/Product/Widgets/detail_appbar_bottom.dart';
+import 'package:badges/badges.dart' as badges;
+import 'package:store_ui/Styles/colors.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -16,23 +20,36 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
-  void initState() {
-    // TODO: implement initState
-    print(widget.productId);
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chi tiết sản phẩm'),
         actions: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.shopping_cart_outlined),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: badges.Badge(
+              position: badges.BadgePosition.topEnd(top: -10, end: -8),
+              showBadge: true,
+              ignorePointer: false,
+              badgeContent: Consumer<CartProvider>(
+                  builder: (context, cartProvider, child) {
+                return Text(
+                  cartProvider.totalCart.toString(),
+                  style: TextStyle(color: white, fontSize: 10),
+                );
+              }),
+              badgeAnimation: const badges.BadgeAnimation.slide(
+                animationDuration: Duration(seconds: 1),
+                colorChangeAnimationDuration: Duration(seconds: 1),
+                loopAnimation: false,
+                curve: Curves.fastOutSlowIn,
+                colorChangeAnimationCurve: Curves.easeInCubic,
+              ),
+              child: const Icon(
+                Icons.shopping_cart_outlined,
+                size: 30,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
@@ -352,7 +369,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               }
             }
           }),
-      bottomNavigationBar: const ProductDetailAppbarBottom(),
+      bottomNavigationBar:
+          ProductDetailAppbarBottom(productId: widget.productId),
     );
   }
 }

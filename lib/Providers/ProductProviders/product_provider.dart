@@ -13,36 +13,86 @@ class ProductProvider extends ChangeNotifier {
   String get resMessageError => _resMessageError;
   int _page = 1;
   bool _isLoading = false;
-  bool _endPage = false;
-  bool get endPage => _endPage;
+  String _active = 'active_order';
+  String get active => _active;
   int get page => _page;
+  String _status = '';
+  String get status => _status;
   bool get isLoading => _isLoading;
   List get products => _products;
 
-  Future<void> getAllProduct() async {
+// set status
+  void setStatus(String status) {
+    _status = status;
+    notifyListeners();
+  }
+
+  // set active
+  void setActive(String act) {
+    _active = act;
+    notifyListeners();
+  }
+
+  Future<void> getAllProduct({
+    String? keyword,
+    String? sortBy,
+    String? order,
+  }) async {
     if (_isLoading) return;
     _isLoading = true;
     notifyListeners();
-    String url = '$requestUrl/products?page=$_page';
+
+    String url = '';
+
+    if (_status.isEmpty) {
+      url = '$requestUrl/products?page=$_page';
+    } else if (_status == 'sold') {
+      url = '$requestUrl/products?page=$_page&sort_by=$_status';
+    } else if (_status == 'desc') {
+      url = '$requestUrl/products?page=$_page&order=$_status';
+    } else if (_status == 'name') {
+      url = '$requestUrl/products?page=$_page&name=$keyword';
+    }
+    if (keyword != null && keyword.isNotEmpty) {
+      setStatus('name');
+      _page = 1;
+      url = '$requestUrl/products?page=$_page&name=$keyword';
+      products.clear();
+    }
+    if (sortBy != null && sortBy.isNotEmpty) {
+      setStatus('sold');
+      setActive('active_sort_by');
+      _page = 1;
+
+      url = '$requestUrl/products?page=$_page&sort_by=$sortBy';
+      products.clear();
+    }
+    if (order != null && order.isNotEmpty) {
+      setStatus('desc');
+      setActive('active_order');
+
+      _page = 1;
+      url = '$requestUrl/products?page=$_page&order=$order';
+      products.clear();
+    }
+
     if (kDebugMode) {
       print(url);
     }
+
     try {
       http.Response req = await http.get(
         Uri.parse(url),
       );
 
       final res = jsonDecode(req.body);
-
       final data = res['data']['products'];
-      final pagination = res['data']['pagination'];
-      if (page == pagination['page_size']) {
-        _endPage = true;
-        notifyListeners();
-      }
-      _products.addAll(data);
+      // final pagination = res['data']['pagination'];
+
+      _products.addAll(data); // Thêm dữ liệu mới vào danh sách hiện tại
 
       _page++;
+
       notifyListeners();
     } on SocketException {
       _isLoading = false;
