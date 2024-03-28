@@ -1,3 +1,4 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
@@ -6,7 +7,6 @@ import 'package:store_ui/Models/product_model.dart';
 import 'package:store_ui/Providers/CartProviders/cart_provider.dart';
 import 'package:store_ui/Providers/ProductProviders/product_provider.dart';
 import 'package:store_ui/Screens/Product/Widgets/detail_appbar_bottom.dart';
-import 'package:badges/badges.dart' as badges;
 import 'package:store_ui/Styles/colors.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -177,7 +177,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                                     color: Colors.yellow,
                                                     size: 20,
                                                   ),
-                                                const SizedBox(width: 5),
+                                                const SizedBox(width: 3),
                                                 const Text('5.0',
                                                     style: TextStyle(
                                                       fontSize: 17,
@@ -238,12 +238,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                                 color: Colors.white,
                                               ),
                                             ),
-                                            const SizedBox(width: 5),
+                                            const SizedBox(width: 3),
                                             const Text(
                                               'Miễn phí trả hàng',
                                               style: TextStyle(
                                                 color: Colors.grey,
-                                                fontSize: 13,
+                                                fontSize: 11,
                                               ),
                                             ),
                                           ],
@@ -275,7 +275,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                               'Chính hãng 100%',
                                               style: TextStyle(
                                                 color: Colors.grey,
-                                                fontSize: 13,
+                                                fontSize: 11,
                                               ),
                                             ),
                                           ],
@@ -302,12 +302,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                                 color: Colors.white,
                                               ),
                                             ),
-                                            const SizedBox(width: 5),
+                                            const SizedBox(width: 3),
                                             const Text(
                                               'Giao miễn phí',
                                               style: TextStyle(
                                                 color: Colors.grey,
-                                                fontSize: 13,
+                                                fontSize: 11,
                                               ),
                                             ),
                                           ],

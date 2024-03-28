@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:store_ui/Models/user_model.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
+import 'package:store_ui/Providers/OrderProviders/order_provider.dart';
 import 'package:store_ui/Screens/Auth/login_page.dart';
 import 'package:store_ui/Screens/Auth/register_page.dart';
+import 'package:store_ui/Screens/Order/Screens/pending_order_page.dart';
 import 'package:store_ui/Screens/Profile/Screens/setting_account_page.dart';
 import 'package:store_ui/Screens/Profile/Widgets/my_button.dart';
 import 'package:store_ui/Screens/Profile/Widgets/profile_item.dart';
 import 'package:store_ui/Styles/colors.dart';
 import 'package:store_ui/Utils/routers.dart';
+import 'package:badges/badges.dart' as badges;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -18,13 +21,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  @override
-  void initState() {
-    print('profile');
-    // UserDataProvider().getProfile().then((value) => print(value.profile!.name));
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(mainAxisSize: MainAxisSize.max, children: [
@@ -166,86 +162,153 @@ class _ProfilePageState extends State<ProfilePage> {
                           color: white,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 10),
-                          child: Column(
-                            children: [
-                              profileItem(
-                                icon: Icons.delivery_dining,
-                                text: 'Đơn mua',
-                                onTap: () => {},
-                              ),
-                              const SizedBox(height: 20),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  Column(
+                          child: FutureBuilder<dynamic>(
+                              future:
+                                  OrderProvider().getAllOrder(context: context),
+                              builder: (context, snapshot) {
+                                final orders = snapshot.data;
+                                if (orders != null) {
+                                  int pendingCount = orders
+                                      .where((order) =>
+                                          order["status"] == "pending")
+                                      .length;
+                                  int shippedCount = orders
+                                      .where((order) =>
+                                          order["status"] == "shipped")
+                                      .length;
+
+                                  int deliveredCount = orders
+                                      .where((order) =>
+                                          order["status"] == "delivered")
+                                      .length;
+
+                                  int cancelledCount = orders
+                                      .where((order) =>
+                                          order["status"] == "cancelled")
+                                      .length;
+                                  return Column(
                                     children: [
-                                      // voucher
-                                      Icon(
-                                        Icons.confirmation_num,
-                                        color: grey,
-                                        size: 25,
+                                      profileItem(
+                                        icon: Icons.delivery_dining,
+                                        text: 'Đơn mua',
+                                        onTap: () => {},
                                       ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        'Đã xác nhận',
-                                        style: TextStyle(
-                                            fontSize: 14, color: grey),
-                                      ),
+                                      const SizedBox(height: 20),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Column(
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () => PageNavigator(
+                                                        ctx: context)
+                                                    .nextPage(
+                                                        page:
+                                                            const PendingOrderPage()),
+                                                child: badges.Badge(
+                                                  badgeContent: Text(
+                                                      '$pendingCount',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                      )),
+                                                  child: Icon(
+                                                    Icons.pending_actions,
+                                                    size: 30,
+                                                    color: grey,
+                                                  ),
+                                                ),
+                                              ),
+                                              Text(
+                                                'Chờ xác nhận',
+                                                style: TextStyle(
+                                                  color: grey,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              badges.Badge(
+                                                badgeContent:
+                                                    Text('$shippedCount',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 12,
+                                                        )),
+                                                child: Icon(
+                                                  Icons.local_shipping_rounded,
+                                                  size: 30,
+                                                  color: grey,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Đang giao hàng',
+                                                style: TextStyle(
+                                                  color: grey,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              badges.Badge(
+                                                badgeContent:
+                                                    Text('$deliveredCount',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 12,
+                                                        )),
+                                                child: Icon(
+                                                  Icons.done_all_rounded,
+                                                  size: 30,
+                                                  color: grey,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Đã giao hàng',
+                                                style: TextStyle(
+                                                  color: grey,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              badges.Badge(
+                                                badgeContent:
+                                                    Text('$cancelledCount',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 12,
+                                                        )),
+                                                child: Icon(
+                                                  Icons.cancel_sharp,
+                                                  size: 30,
+                                                  color: grey,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Đã hủy',
+                                                style: TextStyle(
+                                                  color: grey,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      )
                                     ],
-                                  ),
-                                  Column(
-                                    children: [
-                                      // voucher
-                                      Icon(
-                                        Icons.drive_file_move,
-                                        color: grey,
-                                        size: 25,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        'Đang giao hàng',
-                                        style: TextStyle(
-                                            fontSize: 14, color: grey),
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: [
-                                      // voucher
-                                      Icon(
-                                        Icons.check_box_outlined,
-                                        color: grey,
-                                        size: 25,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        'Đã giao',
-                                        style: TextStyle(
-                                            fontSize: 14, color: grey),
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: [
-                                      // voucher
-                                      Icon(
-                                        Icons.cancel_outlined,
-                                        color: grey,
-                                        size: 25,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        'Đã hủy',
-                                        style: TextStyle(
-                                            fontSize: 14, color: grey),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                  );
+                                } else {
+                                  return const Text('');
+                                }
+                              }),
                         ),
                       ],
                     );

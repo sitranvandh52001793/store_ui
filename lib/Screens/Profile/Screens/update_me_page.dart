@@ -110,12 +110,13 @@ class _UpdateMePageState extends State<UpdateMePage> {
                     value: (context.watch<UserDataProvider>().phone.isEmpty &&
                             user.profile != null &&
                             user.profile!.address != null &&
+                            user.profile!.address!
+                                .isNotEmpty && // Kiểm tra nếu danh sách địa chỉ không rỗng
                             user.profile!.address![0].phone != null)
                         ? user.profile!.address![0].phone.toString()
                         : context.watch<UserDataProvider>().phone.isEmpty ||
                                 user.profile!.address?.isEmpty == true ||
-                                user.profile!.address![0].phone ==
-                                    null // Kiểm tra phone của địa chỉ đầu tiên
+                                user.profile!.address![0].phone == null
                             ? 'Cập nhật'
                             : context.watch<UserDataProvider>().phone,
                     onTap: () => PageNavigator(ctx: context)

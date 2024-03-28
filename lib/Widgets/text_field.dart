@@ -6,6 +6,8 @@ Widget customTextField(
     String? hint,
     FormFieldValidator<String>? validator,
     TextEditingController? controller,
+    // readOnly = false,
+    bool? readOnly = false,
     int? maxLines = 1}) {
   return Column(
     children: [
@@ -25,6 +27,7 @@ Widget customTextField(
           controller: controller,
           maxLines: maxLines,
           validator: validator,
+          readOnly: readOnly!,
           decoration: InputDecoration(
             hintText: hint,
             filled: true, // Enable filled background

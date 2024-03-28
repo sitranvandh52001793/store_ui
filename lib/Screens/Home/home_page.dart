@@ -87,6 +87,10 @@ class _HomePageState extends State<HomePage> {
                         Provider.of<ProductProvider>(context, listen: false)
                             .getAllProduct(sortBy: value);
                       },
+                      selectedBrandCallback: (selectedBrand) {
+                        Provider.of<ProductProvider>(context, listen: false)
+                            .getAllProduct(brand: selectedBrand);
+                      },
                     ),
                   ],
                 );

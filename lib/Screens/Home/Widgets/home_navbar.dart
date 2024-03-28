@@ -1,10 +1,12 @@
 // import 'package:flutter/cupertino.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:store_ui/Providers/CartProviders/cart_provider.dart';
 import 'package:store_ui/Providers/ProductProviders/product_provider.dart';
+import 'package:store_ui/Screens/Cart/cart_page.dart';
 import 'package:store_ui/Styles/colors.dart';
-import 'package:badges/badges.dart' as badges;
+import 'package:store_ui/Utils/routers.dart';
 
 class HomeNavbar extends StatefulWidget {
   final void Function(String)?
@@ -93,10 +95,16 @@ class _HomeNavbarState extends State<HomeNavbar> {
                       curve: Curves.fastOutSlowIn,
                       colorChangeAnimationCurve: Curves.easeInCubic,
                     ),
-                    child: Icon(
-                      Icons.shopping_cart_outlined,
-                      size: 30,
-                      color: primaryColor,
+                    child: InkWell(
+                      onTap: () {
+                        PageNavigator(ctx: context)
+                            .nextPage(page: const CartPage());
+                      },
+                      child: Icon(
+                        Icons.shopping_cart_outlined,
+                        size: 30,
+                        color: primaryColor,
+                      ),
                     ),
                   ),
                 ),

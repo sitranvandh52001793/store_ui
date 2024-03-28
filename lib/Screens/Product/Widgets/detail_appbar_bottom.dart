@@ -77,7 +77,7 @@ class _ProductDetailAppbarBottomState extends State<ProductDetailAppbarBottom> {
               height: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  print(widget.productId);
+                  // print(widget.productId);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,

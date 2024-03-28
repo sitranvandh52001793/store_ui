@@ -3,8 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:store_ui/Providers/AuthProviders/auth_provider.dart';
+import 'package:store_ui/Providers/BrandProviders/brand_provider.dart';
 import 'package:store_ui/Providers/CartProviders/cart_provider.dart';
+import 'package:store_ui/Providers/CategoryProviders/category_provider.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
+import 'package:store_ui/Providers/OrderProviders/order_provider.dart';
 import 'package:store_ui/Providers/ProductProviders/product_provider.dart';
 import 'package:store_ui/Providers/UserProviders/user_provider.dart';
 import 'package:store_ui/Styles/colors.dart';
@@ -36,6 +39,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => BrandProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

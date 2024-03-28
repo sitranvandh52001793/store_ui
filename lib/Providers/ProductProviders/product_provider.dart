@@ -17,6 +17,8 @@ class ProductProvider extends ChangeNotifier {
   String get active => _active;
   int get page => _page;
   String _status = '';
+  String _statusIndex = '';
+  String get statusIndex => _statusIndex;
   String get status => _status;
   bool get isLoading => _isLoading;
   List get products => _products;
@@ -27,17 +29,19 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setStatusIndex(String index) {
+    _statusIndex = index;
+    notifyListeners();
+  }
+
   // set active
   void setActive(String act) {
     _active = act;
     notifyListeners();
   }
 
-  Future<void> getAllProduct({
-    String? keyword,
-    String? sortBy,
-    String? order,
-  }) async {
+  Future<void> getAllProduct(
+      {String? keyword, String? sortBy, String? order, String? brand}) async {
     if (_isLoading) return;
     _isLoading = true;
     notifyListeners();
@@ -52,6 +56,8 @@ class ProductProvider extends ChangeNotifier {
       url = '$requestUrl/products?page=$_page&order=$_status';
     } else if (_status == 'name') {
       url = '$requestUrl/products?page=$_page&name=$keyword';
+    } else if (_statusIndex != 'null') {
+      url = '$requestUrl/products?page=$_page&brand=$_statusIndex';
     }
     if (keyword != null && keyword.isNotEmpty) {
       setStatus('name');
@@ -75,7 +81,18 @@ class ProductProvider extends ChangeNotifier {
       url = '$requestUrl/products?page=$_page&order=$order';
       products.clear();
     }
+    if (brand != null && brand.isNotEmpty) {
+      setStatusIndex(brand);
+      _page = 1;
+      url = '$requestUrl/products?page=$_page&brand=$_statusIndex';
 
+      products.clear();
+    } else {
+      url = '$requestUrl/products?page=$_page&brand=$_statusIndex';
+    }
+    if (_statusIndex == 'null') {
+      url = '$requestUrl/products?page=$_page';
+    }
     if (kDebugMode) {
       print(url);
     }

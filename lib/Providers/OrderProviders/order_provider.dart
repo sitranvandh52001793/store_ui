@@ -5,50 +5,26 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:store_ui/Constants/url.dart';
 import 'package:store_ui/Providers/Databases/user_data_provider.dart';
+import 'package:store_ui/Screens/Cart/cart_page.dart';
 import 'package:store_ui/Utils/notify.dart';
+import 'package:store_ui/Utils/routers.dart';
 
-class CartProvider extends ChangeNotifier {
+class OrderProvider extends ChangeNotifier {
   final requestUrl = ApiUrl.baseUrl;
   String _resMessageError = '';
   String _resMessageSuccess = '';
   String get resMessageError => _resMessageError;
   bool _isLoading = false;
   bool get isLoading => _isLoading;
-  int _totalCart = 0;
 
-  int get totalCart => _totalCart;
-  CartProvider() {
-    // Gọi phương thức getCart() để lấy danh sách sản phẩm trong giỏ hàng
-    getCart().then((data) {
-      // Nếu có dữ liệu trả về
-      if (data != null) {
-        // Gán giá trị cho _totalCart là độ dài của danh sách sản phẩm
-        _totalCart = data.length;
-
-        // Thông báo cho listeners về sự thay đổi
-        notifyListeners();
-      }
-    });
-  }
-
-  // clear cart
-  void clearCart() {
-    _totalCart = 0;
-    notifyListeners();
-  }
-
-  void addProductToCart(
-      {required String productId,
-      required String quantity,
-      required BuildContext? context}) async {
+  void createOrder({String? note, required BuildContext? context}) async {
     _isLoading = true;
     notifyListeners();
 
-    String url = '$requestUrl/carts';
+    String url = '$requestUrl/orders';
     final token = await UserDataProvider().getToken();
     final body = {
-      "productId": productId,
-      "quantity": quantity,
+      "note": note,
     };
 
     try {
@@ -65,13 +41,17 @@ class CartProvider extends ChangeNotifier {
         final res = jsonDecode(req.body);
         _isLoading = false;
         _resMessageSuccess = res['data']['message'];
-        _totalCart = res['data']['totalNumber'];
-        notifyListeners();
+        // Dùng shared_preferences để lưu lại cho tôi rằng đã đặt hàng thành công
+
         if (_resMessageSuccess.isNotEmpty) {
           // ignore: use_build_context_synchronously
           successMessage(context: context!, message: _resMessageSuccess);
         }
+
         notifyListeners();
+
+        // ignore: use_build_context_synchronously
+        PageNavigator(ctx: context).nextPageOnly(page: const CartPage());
       } else {
         final res = jsonDecode(req.body);
 
@@ -108,98 +88,40 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  void incrementQuantity({
-    required int productId,
-    required int quantity,
-    required BuildContext? context,
-  }) async {
+  Future<dynamic> getAllOrder({required BuildContext? context}) async {
     _isLoading = true;
     notifyListeners();
 
-    String url = '$requestUrl/carts';
-    final token = await UserDataProvider().getToken();
-    final body = {
-      "productId": productId.toString(),
-      "quantity": quantity.toString(),
-    };
-
-    try {
-      http.Response req = await http.patch(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token'
-        },
-        body: jsonEncode(body),
-      );
-
-      if (req.statusCode == 200 || req.statusCode == 201) {
-        _isLoading = false;
-        _resMessageSuccess = 'Cập nhật thành công';
-
-        notifyListeners();
-        if (_resMessageSuccess.isNotEmpty) {
-          // ignore: use_build_context_synchronously
-          successMessage(context: context!, message: _resMessageSuccess);
-        }
-        notifyListeners();
-      } else {
-        final res = jsonDecode(req.body);
-
-        _isLoading = false;
-        if (req.statusCode == 401) {
-          _resMessageError = res['data']['message'];
-        }
-        _resMessageError = res['data']['message'];
-
-        if (_resMessageError.isNotEmpty) {
-          // ignore: use_build_context_synchronously
-          errorMessage(context: context!, message: _resMessageError);
-          notifyListeners();
-        }
-      }
-    } on SocketException {
-      _isLoading = false;
-      _resMessageError = 'Lỗi kết nối mạng';
-      if (_resMessageError.isNotEmpty) {
-        // ignore: use_build_context_synchronously
-        errorMessage(context: context!, message: _resMessageError);
-      }
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _resMessageError = 'Lỗi không xác định';
-      if (_resMessageError.isNotEmpty) {
-        // ignore: use_build_context_synchronously
-        errorMessage(context: context!, message: _resMessageError);
-      }
-      notifyListeners();
-    } finally {
-      clear();
-    }
-  }
-
-  Future<dynamic> getCart({BuildContext? context}) async {
-    _isLoading = true;
-    notifyListeners();
-
-    String url = '$requestUrl/carts';
+    String url = '$requestUrl/orders';
     final token = await UserDataProvider().getToken();
 
     try {
       http.Response req = await http.get(
         Uri.parse(url),
-        headers: {'Authorization': 'Bearer $token'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
       );
 
       if (req.statusCode == 200 || req.statusCode == 201) {
         final res = jsonDecode(req.body);
         _isLoading = false;
-        // Gán giá trị cho _carts là danh sách sản phẩm trong giỏ hàng
+        return res['data']['orders'];
+      } else {
+        final res = jsonDecode(req.body);
 
-        notifyListeners();
+        _isLoading = false;
+        if (req.statusCode == 401) {
+          _resMessageError = res['data']['message'];
+        }
+        _resMessageError = res['data']['message'];
 
-        return res['data'];
+        if (_resMessageError.isNotEmpty) {
+          // ignore: use_build_context_synchronously
+          errorMessage(context: context!, message: _resMessageError);
+          notifyListeners();
+        }
       }
     } on SocketException {
       _isLoading = false;
@@ -222,42 +144,33 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  void deleteProductToCart(
-      {required int productId, required BuildContext? context}) async {
+  Future<dynamic> getAllOrderById(
+      {required int id, required BuildContext? context}) async {
     _isLoading = true;
     notifyListeners();
 
-    String url = '$requestUrl/carts';
+    String url = '$requestUrl/orders/$id';
     final token = await UserDataProvider().getToken();
-    final body = {
-      "productId": productId,
-    };
 
     try {
-      http.Response req = await http.delete(
+      http.Response req = await http.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token'
         },
-        body: jsonEncode(body),
       );
 
       if (req.statusCode == 200 || req.statusCode == 201) {
         final res = jsonDecode(req.body);
         _isLoading = false;
-        _resMessageSuccess = res['data']['message'];
-        _totalCart = _totalCart - 1;
-        notifyListeners();
-        if (_resMessageSuccess.isNotEmpty) {
-          // ignore: use_build_context_synchronously
-          successMessage(context: context!, message: _resMessageSuccess);
-        }
-        notifyListeners();
+
+        return res['data'];
       } else {
         final res = jsonDecode(req.body);
 
         _isLoading = false;
+
         if (req.statusCode == 401) {
           _resMessageError = res['data']['message'];
         }
